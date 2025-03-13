@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description"
+    content="As interest grows in world models that predict future states from current observations and actions, accurately modeling part-level dynamics has become increasingly relevant for various applications. Existing approaches, such as Puppet-Master, rely on fine-tuning large-scale pre-trained video diffusion models, which are impractical for real-world use due to the limitations of 2D video representation and slow processing times. To overcome these challenges, we present PartRM, a novel 4D reconstruction framework that simultaneously models appearance, geometry, and part-level motion from multi-view images of a static object. PartRM builds upon large 3D Gaussian reconstruction models, leveraging their extensive knowledge of appearance and geometry in static objects. To address data scarcity in 4D, we introduce the PartDrag-4D dataset, providing multi-view observations of part-level dynamics across over 20,000 states. We enhance the model’s understanding of interaction conditions with a multi-scale drag embedding module that captures dynamics at varying granularities. To prevent catastrophic forgetting during fine-tuning, we implement a two-stage training process that focuses sequentially on motion and appearance learning. Experimental results show that PartRM establishes a new state-of-the-art in part-level motion learning and can be applied in manipulation tasks in robotics." />
+
+  <meta name="keywords"
+    content="PartRM, 3D reconstruction, Drag" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>
+    PartRM | Project Page
+  </title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet" />
+
+  <link rel="stylesheet" href="static/css/bulma.min.css" />
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css" />
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css" />
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+  <link rel="stylesheet" href="static/css/index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/beerslider/dist/BeerSlider.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+</head>
+
+<style>
+  /* 修改后的画廊样式 */
+  .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center; /* 水平居中 */
+      gap: 20px;
+      padding: 20px;
+  }
+
+  .gallery .column {
+      flex: 0 1 auto; /* 允许弹性收缩 */
+      max-width: 600px; /* 控制最大宽度 */
+      width: 100%;
+      display: flex;
+      justify-content: center; /* 水平居中 */
+      align-items: center; /* 垂直居中 */
+  }
+
+  .gallery img {
+      width: 100%;
+      max-width: 100%; /* 确保图片不超过容器宽度 */
+      height: auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+  }
+
+  /* Lightbox样式 */
+  #lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* 确保lightbox在顶部 */
+  }
+
+  #lightbox img {
+      width: 80%;
+      max-width: 800px;
+      object-fit: contain;
+  }
+
+  .buttons {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+  }
+
+  .buttons button {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 50%;
+      font-size: 20px;
+  }
+
+  .buttons button:hover {
+      background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  /* 关闭按钮 */
+  #lightbox span {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      font-weight: bold;
+  }
+
+</style>
+
+<body>
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h2 class="title is-2 publication-title">
+              PartRM: Modeling Part-Level Dynamics with Large 4D Reconstruction Model
+            </h2>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                Mingju Gao<sup>*1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Yike Pan<sup>*1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                <a href="https://c7w.tech/about/" target="_blank">Huan-ang Gao*</a><sup>1,2</sup>,
+              </span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Zongzheng Zhang<sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="SECOND AUTHOR PERSONAL LINK" target="_blank" -->
+                Wenyi Li<sup>3</sup>,</span><br />
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a href="https://zsdonghao.github.io/", target="_blank">Hao Dong</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a href="https://ha0tang.github.io/", target="_blank">Hao Tang</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <!-- <a href="https://ha0tang.github.io/" target="_blank">Hao Tang</a><sup>4</sup>,</span> -->
+                <a href="https://ericyi.github.io/", target="_blank">Li Yi</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://sites.google.com/view/fromandto" target="_blank">Hao Zhao</a><sup>&dagger;1</sup>
+              </span>
+            </div>
+            <!-- a margin of 0.5em -->
+            <div style="margin: 0.5em;"></div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block is-size-6">
+                <sup>1</sup> Institute for AI Industry Research (AIR), Tsinghua University &nbsp;&nbsp;&nbsp;
+                <br>
+                <sup>2</sup> Department of Electrical Engineering and Computer Science, University of Michigan &nbsp;&nbsp;&nbsp;
+                <br>
+                <sup>3</sup> School of Computer Science, Peking University. &nbsp;&nbsp;&nbsp;
+                <sup>4</sup> Institute for Interdisciplinary Information Sciences (IIIS), Tsinghua University
+                <!-- <div style="margin: 0.1em;"></div> -->
+                <span class="eql-cntrb"><small><br /><sup>*</sup>Indicates Equal Contribution</small></span>
+                <!-- a span of 5em-->
+                <span style="margin: 1em;"></span>
+                <span class="eql-cntrb"><small><sup>&dagger;</sup>Indicates Corresponding Author</small></span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Arxiv PDF link -->
+                <span class="link-block">
+                  <a href="todo" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+
+                <!-- Github link -->
+                <span class="link-block">
+                  <a href="todo" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- ArXiv abstract Link -->
+                <span class="link-block">
+                  <a href="todo" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teaser video-->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <!-- <video poster="" id="tree" autoplay controls muted loop height="100%"> -->
+        <!-- Your video here -->
+        <!-- <source src="static/videos/banner_video.mp4" type="video/mp4" /> -->
+        <!-- </video> -->
+        <!-- centering the image -->
+        <div class="columns is-centered">
+
+        </div>
+        <!-- <img src="static/images/Teaser_cs1.jpg" width="100%" /> -->
+        <h2 class="has-text-centered is-size-6">
+          <b></b>
+        </h2>
+      </div>
+    </div>
+  </section>
+  <!-- End teaser video -->
+
+  <!-- Paper abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              As interest grows in world models that predict future states from current observations and actions, accurately modeling part-level dynamics has become increasingly relevant for various applications. Existing approaches, such as Puppet-Master, rely on fine-tuning large-scale pre-trained video diffusion models, which are impractical for real-world use due to the limitations of 2D video representation and slow processing times. To overcome these challenges, we present PartRM, a novel 4D reconstruction framework that simultaneously models appearance, geometry, and part-level motion from multi-view images of a static object. PartRM builds upon large 3D Gaussian reconstruction models, leveraging their extensive knowledge of appearance and geometry in static objects. To address data scarcity in 4D, we introduce the PartDrag-4D dataset, providing multi-view observations of part-level dynamics across over 20,000 states. We enhance the model’s understanding of interaction conditions with a multi-scale drag embedding module that captures dynamics at varying granularities. 
+              To prevent catastrophic forgetting during fine-tuning, we implement a two-stage training process that focuses sequentially on motion and appearance learning. 
+              Experimental results show that PartRM establishes a new state-of-the-art in part-level motion learning and can be applied in manipulation tasks in robotics. 
+              Our code, data, and models are publicly available to facilitate future research.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End paper abstract -->
+
+  <!-- Youtube video -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <!-- Paper video. -->
+        <h2 class="title is-3">Method</h2>
+        <div class="columns is-centered">
+          <img src="static/partrm_res/images/main_graph.jpg" width="75%" />
+        </div>
+        <h2 class="has-text-centered is-size-6" width="55%">
+          <b>Overview of PartRM.</b> We first leverage a fine-tuned Zero123++ to generate multi-view images, 
+          followed by our designed drag propagation module to distribute drags on the moving parts. 
+          The drags and multi-view images are then fed into our designed network, 
+          where the drags are embedded using our multi-scale embedding module and subsequently concatenate 
+          to the UNet down blocks. We adopt a two-stage training approach: in the first stage, 
+          the network learns part motion using ground truth deformed 3D Gaussians as supervision, 
+          which are stored in the Gaussian database constructed by LGM. In the second stage, the network learns appearance, 
+          with ground truth deformed multi-view renderings serving as supervision.
+        </h2>
+        <br />
+        <!-- <div class="columns is-centered">
+          <img src="static/images/ade-teaser.jpg" width="55%" />
+        </div>
+        <h2 class="has-text-centered is-size-6" width="55%">
+          <b>Explanation of the underlying mechanisms of our proposed noise priors using ADE20K.</b> Introducing the
+          spatial prior aligns the image style with the dataset's aesthetic while removing odd substructures in large
+          semantic areas. Incorporating the class prior can enhance alignment with the provided semantic masks. By
+          jointing spatial and class priors, their beneficial features are combined, allowing our joint prior (SCP-Diff)
+          to achieve state-of-the-art results on ADE20K. 
+        </h2> -->
+
+      </div>
+    </div>
+  </section>
+  <!-- End youtube video -->
+
+  <!-- Youtube video -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <!-- Paper video. -->
+        <h2 class="title is-3">Results</h2>
+        <div class="columns is-centered has-text-centered"
+          style="width: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column">
+
+          <video autoplay loop muted playsinline width="60%">
+            <source src="static/partrm_res/videos/teaser.mp4" type="video/mp4">
+          </video>
+
+        </div>
+
+        <h2 class="has-text-centered is-size-6">
+          <b>Generation Results: </b>
+          Given a single-view image of an articulated object and user-defined drag operations specifying the starting point 
+          and target endpoint of movable joints as input, our method generates a 3D Gaussian Splatting representation of 
+          the object's terminal state after movement.
+        </h2>
+
+        <br />
+
+        <!-- quantitative results start here -->
+        <table>
+          <tr>
+            <th rowspan="2">Method</th>
+            <th rowspan="2">Setting</th>
+            <th colspan="3">PartDrag-4D</th>
+            <th colspan="3">Objaverse-Animation-HQ</th>
+            <th rowspan="2">Time (↓)</th>
+          </tr>
+          <tr>
+            <td>PSNR ↑</td>
+            <td>SSIM ↑</td>
+            <td>LPIPS ↓</td>
+            <td>PSNR ↑</td>
+            <td>SSIM ↑</td>
+            <td>LPIPS ↓</td>
+          </tr>
+          <tr>
+            <td>DiffEditor</td>
+            <td>NVS-First</td>
+            <td>22.52</td>
+            <td>0.8974</td>
+            <td>0.1138</td>
+            <td>19.24</td>
+            <td>0.8988</td>
+            <td>0.0902</td>
+            <td>33.6s / 151.2s</td>
+          </tr>
+          <tr>
+            <td>DiffEditor</td>
+            <td>Drag-First</td>
+            <td>22.34</td>
+            <td>0.9174</td>
+            <td>0.0918</td>
+            <td><u>19.46</u></td>
+            <td><u>0.9079</u></td>
+            <td><u>0.0842</u></td>
+            <td>11.5s / 128.8s</td>
+          </tr>
+          <tr>
+            <td>DragAPart</td>
+            <td>NVS-First</td>
+            <td>24.27</td>
+            <td>0.9343</td>
+            <td>0.0690</td>
+            <td>19.38</td>
+            <td>0.8915</td>
+            <td>0.0873</td>
+            <td>21.4s / 139.7s</td>
+          </tr>
+          <tr>
+            <td>DragAPart</td>
+            <td>Drag-First</td>
+            <td><u>24.91</u></td>
+            <td>0.9454</td>
+            <td>0.0567</td>
+            <td>19.44</td>
+            <td>0.9004</td>
+            <td>0.0885</td>
+            <td><u>8.5s / 119.4s</u></td>
+          </tr>
+          <tr>
+            <td>Puppet-Master</td>
+            <td>NVS-First</td>
+            <td>24.20</td>
+            <td>0.9447</td>
+            <td>0.0579</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>64.9s / 187.5s</td>
+          </tr>
+          <tr>
+            <td>Puppet-Master</td>
+            <td>Drag-First</td>
+            <td>24.42</td>
+            <td><u>0.9475</u></td>
+            <td><u>0.0528</u></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>245.8s / 361.5s</td>
+          </tr>
+          <tr>
+            <td><strong>PartRM (Ours)</strong></td>
+            <td>-</td>
+            <td><strong>28.15</strong></td>
+            <td><strong>0.9531</strong></td>
+            <td><strong>0.0356</strong></td>
+            <td><strong>21.38</strong></td>
+            <td><strong>0.9209</strong></td>
+            <td><strong>0.0758</strong></td>
+            <td><strong>4.2s / -</strong></td>
+          </tr>
+          <caption>Quantitative Comparison of Different Methods</caption>
+        </table>
+
+      </div>
+    </div>
+  </section>
+  <!-- End youtube video -->
+
+  <section class="hero is-small">
+    <div class="hero-body">
+        <div class="container">
+            <!-- Paper video. -->
+            <h2 class="title is-3">Gallery</h2>
+
+            <div class="gallery">
+                <div class="column">
+                    <img src="static/partrm_res/images/supp_part.jpg" alt="Image 1" onclick="openLightbox(this)">
+                </div>
+                <div class="column">
+                    <img src="static/partrm_res/images/supp_pm.jpg" alt="Image 2" onclick="openLightbox(this)">
+                </div>
+            </div>
+
+            <!-- Lightbox Modal -->
+            <div id="lightbox">
+                <span onclick="closeLightbox()">×</span>
+                <div class="buttons">
+                    <button onclick="prevImage()">❮</button>
+                    <button onclick="nextImage()">❯</button>
+                </div>
+                <img id="lightbox-img" src="" alt="">
+            </div>
+
+        </div>
+    </div>
+</section>
+
+  <!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      If you find our work useful in your research, please consider citing:
+      <div style="margin: 0.5em;"></div>
+      <pre><code>@article{gao2024scp,
+  title={SCP-Diff: Photo-Realistic Semantic Image Synthesis with Spatial-Categorical Joint Prior},
+  author={Gao, Huan-ang and Gao, Mingju and Li, Jiaju and Li, Wenyi and Zhi, Rong and Tang, Hao and Zhao, Hao},
+  journal={arXiv preprint arXiv:2403.09638},
+  year={2024}
+}</code></pre>
+    </div>
+  </section>
+  <!--End BibTex citation -->
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the
+              <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project
+                Page Template</a>
+              which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the of this website, we
+              just ask that you link back to this page in the footer. <br />
+              This website is licensed under a
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons
+                Attribution-ShareAlike 4.0 International
+                License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Statcounter tracking code -->
+
+  <!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+  <!-- End of Statcounter Code -->
+  <script src="https://unpkg.com/beerslider/dist/BeerSlider.js"></script>
+  <script>
+    new BeerSlider(document.getElementById('slider1'), { start: '40' });
+    new BeerSlider(document.getElementById('slider2'), { start: '40' });
+    new BeerSlider(document.getElementById('slider3'), { start: '40' });
+    new BeerSlider(document.getElementById('slider4'), { start: '40' });
+    new BeerSlider(document.getElementById('slider5'), { start: '40' });
+    new BeerSlider(document.getElementById('slider6'), { start: '40' });
+    new BeerSlider(document.getElementById('slider7'), { start: '40' });
+    new BeerSlider(document.getElementById('slider8'), { start: '40' });
+    new BeerSlider(document.getElementById('slider9'), { start: '40' });
+    new BeerSlider(document.getElementById('slider10'), { start: '40' });
+  </script>
+
+  <script>
+    let currentIndex = -1;
+    const images = [
+        'static/partrm_res/images/supp_part.jpg',
+        'static/partrm_res/images/supp_pm.jpg',
+    ];
+
+    function openLightbox(img) {
+        document.getElementById('lightbox').style.display = 'flex';
+        
+        let clickedImageSrc = img.getAttribute('src');
+        currentIndex = images.indexOf(clickedImageSrc);
+        document.getElementById('lightbox-img').src = clickedImageSrc;
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function prevImage() {
+        if (currentIndex > 0) {
+            currentIndex--;
+        } else {
+            currentIndex = images.length - 1;
+        }
+        document.getElementById('lightbox-img').src = images[currentIndex];
+    }
+
+    function nextImage() {
+        if (currentIndex < images.length - 1) {
+            currentIndex++;
+        } else {
+            currentIndex = 0;
+        }
+        document.getElementById('lightbox-img').src = images[currentIndex];
+    }
+  </script>
+  
+</body>
+
+</html>
